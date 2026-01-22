@@ -511,9 +511,4 @@ footer a:hover {
   margin-top: var(--spacing-lg);
 }
 
-/* Focus states for keyboard navigation */
-a:focus-visible,
-button:focus-visible {
-  outline: 2px solid var(--accent-cyan);
-  outline-offset: 4px;
-}
+
