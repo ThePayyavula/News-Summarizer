@@ -1,6 +1,11 @@
-const TECH_FEEDS = [
+/**
+ * Application configuration
+ * Centralized settings for News API, cache, and OpenAI
+ */
+
+const NEWS_API_CONFIG = {
   apiKey: process.env.NEWS_API_KEY,
-  baseUrl: 'https://newsapi.org/',
+  baseUrl: 'https://newsapi.org/v2',
   endpoints: {
     topHeadlines: '/top-headlines',
     everything: '/everything'
@@ -10,7 +15,7 @@ const TECH_FEEDS = [
     country: 'us',
     pageSize: 20
   }
-];
+};
 
 const CACHE_CONFIG = {
   duration: 15 * 60 * 1000, // 15 minutes
@@ -27,7 +32,7 @@ const SERVER_CONFIG = {
 };
 
 module.exports = {
-  TECH_FEEDS,
+  NEWS_API_CONFIG,
   CACHE_CONFIG,
   API_CONFIG,
   SERVER_CONFIG,
