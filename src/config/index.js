@@ -1,6 +1,6 @@
 const TECH_FEEDS = [
   apiKey: process.env.NEWS_API_KEY,
-  baseUrl: 'https://newsapi.org/v2',
+  baseUrl: 'https://newsapi.org/',
   endpoints: {
     topHeadlines: '/top-headlines',
     everything: '/everything'
