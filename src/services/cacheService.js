@@ -1,5 +1,5 @@
 /**
- * Simple in-memory cache service
+ * In-memory cache service
  */
 
 const { CACHE_CONFIG } = require('../config');
