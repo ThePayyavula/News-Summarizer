@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tech Pulse | Your Daily Tech News, Simplified</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+
+    const loadingMessages = [
+      "Brewing your daily tech digest...",
+      "Scanning the tech universe...",
+      "Catching up on what happened today...",
+      "Asking the AI what's important...",
+      "Filtering through the noise..."
+    ];
+
+    function App() {
+      const [news, setNews] = useState([]);
+      const [summary, setSummary] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+      const [refreshing, setRefreshing] = useState(false);
+      const [loadingMsg, setLoadingMsg] = useState(loadingMessages[0]);
+
+      const fetchData = useCallback(async (showRefresh = false) => {
+        try {
+          if (showRefresh) {
+            setRefreshing(true);
+          } else {
+            setLoading(true);
+            // Rotate loading messages
+            setLoadingMsg(loadingMessages[Math.floor(Math.random() * loadingMessages.length)]);
+          }
+
+          setError(null);
+
+          // Fetch news
+          const newsRes = await fetch('/api/news');
+          const newsData = await newsRes.json();
+
+          if (!newsData.success) {
+            throw new Error(newsData.error || 'Failed to fetch news');
+          }
+
+          setNews(newsData.articles);
+
+          // Generate AI summary with the fetched articles
+          if (newsData.articles && newsData.articles.length > 0) {
+            const summaryRes = await fetch('/api/summary', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ articles: newsData.articles })
+            });
+
+            const summaryData = await summaryRes.json();
+
+            if (summaryData.success && summaryData.summary) {
+              setSummary(summaryData.summary);
+            }
+          }
+        } catch (err) {
+          setError('Hmm, having trouble fetching the news. Mind trying again?');
+          console.error(err);
+        } finally {
+          setLoading(false);
+          setRefreshing(false);
+        }
+      }, []);
+
+      useEffect(() => {
+        fetchData();
+      }, [fetchData]);
+
+      const formatDate = (dateStr) => {
+        try {
+          const date = new Date(dateStr);
+          const now = new Date();
+          const diffMs = now - date;
+          const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+          if (diffHours < 1) return 'Just now';
+          if (diffHours < 24) return `${diffHours}h ago`;
+          if (diffHours < 48) return 'Yesterday';
+          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        } catch {
+          return 'Recent';
+        }
+      };
+
+      if (loading) {
+        return (
+          <div className="container">
+            <header>
+              <div className="logo">
+                <div className="logo-icon">⚡</div>
+                <span className="logo-text">News Summary</span>
+              </div>
+              <p className="tagline">{loadingMsg}</p>
+            </header>
+            <div className="loading">
+              <div className="loading-spinner"></div>
+              <p className="loading-text">Give us a sec...</p>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="container">
+          <header>
+            <p className="tagline">Tech-News summary for you...</p>
+          </header>
+
+          {error && (
+            <div className="error-message">
+              {error}
+              <button
+                className="refresh-btn"
+                onClick={() => fetchData(false)}
+                style={{ marginTop: '16px' }}
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {summary && (
+            <section className="summary-section">
+              <div className="section-label">What's Happening Today</div>
+              <p className="executive-summary">{summary.executiveSummary}</p>
+
+              {summary.topStories && summary.topStories.length > 0 && (
+                <div className="top-stories">
+                  <div className="section-label" style={{ marginTop: '24px' }}>
+                    Stories Worth Your Time
+                  </div>
+                  {summary.topStories.map((story, idx) => (
+                    <div key={idx} className="top-story">
+                      <div className="top-story-title">{story.title}</div>
+                      <div className="top-story-significance">Why it matters: {story.significance}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {summary.themes && summary.themes.length > 0 && (
+                <>
+                  <div className="section-label" style={{ marginTop: '32px' }}>
+                    Today's Points of Focus
+                  </div>
+                  <div className="themes-container">
+                    {summary.themes.map((theme, idx) => (
+                      <span key={idx} className="theme-tag">{theme}</span>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              <button
+                className="refresh-btn"
+                onClick={() => fetchData(true)}
+                disabled={refreshing}
+              >
+                {refreshing ? 'Hold on...' : 'Refresh News'}
+              </button>
+            </section>
+          )}
+
+          <section>
+            <div className="section-label" style={{ marginBottom: '24px' }}>
+              All the Headlines ({news.length} stories)
+            </div>
+            <div className="news-grid">
+              {news.map((article, idx) => (
+                <article key={idx} className="news-card">
+                  <div className="card-header">
+                    <span className="source-badge">{article.source}</span>
+                  </div>
+                  <h3 className="card-title">
+                    <a href={article.link} target="_blank" rel="noopener noreferrer">
+                      {article.title}
+                    </a>
+                  </h3>
+                  {article.description && (
+                    <p className="card-description">{article.description}</p>
+                  )}
+                  <div className="card-footer">
+                    <span className="timestamp">{formatDate(article.pubDate)}</span>
+                    <a href={article.link} target="_blank" rel="noopener noreferrer" className="read-more">
+                      Read more
+                    </a>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <footer>
+            <p style={{ marginTop: '8px', opacity: 0.6 }}>
+              News updates every 15 minutes
+            </p>
+          </footer>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
