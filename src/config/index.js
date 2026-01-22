@@ -1,29 +1,15 @@
 const TECH_FEEDS = [
-  { 
-    name: 'TechCrunch', 
-    url: 'https://techcrunch.com/feed/', 
-    category: 'Startups & Funding' 
+  apiKey: process.env.NEWS_API_KEY,
+  baseUrl: 'https://newsapi.org/v2',
+  endpoints: {
+    topHeadlines: '/top-headlines',
+    everything: '/everything'
   },
-  { 
-    name: 'Ars Technica', 
-    url: 'https://feeds.arstechnica.com/arstechnica/technology-lab', 
-    category: 'Deep Tech' 
-  },
-  { 
-    name: 'The Verge', 
-    url: 'https://www.theverge.com/rss/index.xml', 
-    category: 'Consumer Tech' 
-  },
-  { 
-    name: 'Wired', 
-    url: 'https://www.wired.com/feed/rss', 
-    category: 'Tech & Culture' 
-  },
-  { 
-    name: 'Hacker News', 
-    url: 'https://hnrss.org/frontpage', 
-    category: 'Developer News' 
-  },
+  defaultParams: {
+    category: 'technology',
+    country: 'us',
+    pageSize: 20
+  }
 ];
 
 const CACHE_CONFIG = {
